@@ -1,5 +1,5 @@
 # Avoid version control files.
-\B\.git(?:ignore|)\b
+^.git
 
 # Avoid Makemaker generated and utility files.
 \bMANIFEST\.bak
@@ -22,6 +22,11 @@
 \b\.#
 \.bak$
 \.rpm$
+\.o$
+\.c$
+\.o$
+\.bs$
+^README\.pod$
 
 # Avoid Devel::Cover files.
 \bcover_db\b
@@ -32,8 +37,3 @@
 ^makeall\.sh$
 ^tmp/
 ^Time-Local-TZ-.*
-^xt/
-^ex/
-^topdir-
-^benchmarks/mojo
-^benchmarks/nginx-

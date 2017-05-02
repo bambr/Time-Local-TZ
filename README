@@ -137,7 +137,14 @@ NOTES AND CAVEATS
     "tzdata".
 
 SEE ALSO
-    localtime, Time::Local::timelocal, POSIX::strftime, POSIX::strptime
+    To get more information about "localtime" format, see "localtime" in
+    perlfunc and "timelocal" in Time::Local.
+
+    If you are interested in useful functions to work with "localtime" data,
+    see "strftime" in POSIX and POSIX::strptime.
+
+    If you want to know more on alternative modules to convert time between
+    timezones, see DateTime and DateTime::TimeZone.
 
 AUTHOR
     Sergey Panteleev, <bambr@cpan.org>

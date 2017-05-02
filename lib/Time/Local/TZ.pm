@@ -6,7 +6,7 @@ use warnings;
 use base 'Exporter';
 use XSLoader;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 our %EXPORT_TAGS = (
     func => [ qw/
@@ -182,7 +182,11 @@ If you have problems running this module tests, please refresh your C<tzdata>.
 
 =head1 SEE ALSO
 
-localtime, Time::Local::timelocal, POSIX::strftime, POSIX::strptime
+To get more information about "localtime" format, see L<perlfunc/localtime> and L<Time::Local/timelocal>.
+
+If you are interested in useful functions to work with "localtime" data, see L<POSIX/strftime> and L<POSIX::strptime>.
+
+If you want to know more on alternative modules to convert time between timezones, see L<DateTime> and L<DateTime::TimeZone>.
 
 =head1 AUTHOR
 

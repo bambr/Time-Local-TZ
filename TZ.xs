@@ -8,21 +8,19 @@
 #include <string.h>
 
 
-#define BACKUP_TZ()                                       \
-    char* old_tz_p;                                       \
-    int envsize = 1;                                      \
-    old_tz_p = getenv("TZ");                              \
-    envsize = old_tz_p == NULL ? 1 : strlen(old_tz_p)+1;  \
-    char old_tz[envsize];                                 \
-    if (old_tz_p != NULL)                                 \
-        memcpy(old_tz, old_tz_p, envsize);                \
+#define BACKUP_TZ()                                           \
+    char* old_tz_p = getenv("TZ");                            \
+    int envsize = old_tz_p == NULL ? 1 : strlen(old_tz_p)+1;  \
+    char old_tz[envsize];                                     \
+    if (old_tz_p != NULL)                                     \
+        memcpy(old_tz, old_tz_p, envsize);                    \
 
-#define RESTORE_TZ()                                      \
-    if (old_tz_p == NULL) {                               \
-        unsetenv("TZ");                                   \
-    } else {                                              \
-        setenv("TZ", old_tz, 1);                          \
-    }                                                     \
+#define RESTORE_TZ()                                          \
+    if (old_tz_p == NULL) {                                   \
+        unsetenv("TZ");                                       \
+    } else {                                                  \
+        setenv("TZ", old_tz, 1);                              \
+    }                                                         \
 
 
 MODULE = Time::Local::TZ		PACKAGE = Time::Local::TZ
@@ -73,14 +71,14 @@ tz_timelocal(...)
             croak("Usage: tz_timelocal(tz, sec, min, hour, mday, mon, year, [ wday, yday, is_dst ])");
 
         tz = SvPV_nolen(ST(0));
-        tm.tm_sec  = SvIV(ST(1));
-        tm.tm_min  = SvIV(ST(2));
-        tm.tm_hour = SvIV(ST(3));
-        tm.tm_mday = SvIV(ST(4));
-        tm.tm_mon  = SvIV(ST(5));
-        tm.tm_year = SvIV(ST(6));
-        tm.tm_wday = -1;
-        tm.tm_yday = -1;
+        tm.tm_sec   = SvIV(ST(1));
+        tm.tm_min   = SvIV(ST(2));
+        tm.tm_hour  = SvIV(ST(3));
+        tm.tm_mday  = SvIV(ST(4));
+        tm.tm_mon   = SvIV(ST(5));
+        tm.tm_year  = SvIV(ST(6));
+        tm.tm_wday  = -1;
+        tm.tm_yday  = -1;
         tm.tm_isdst = -1;
 
         BACKUP_TZ();
@@ -116,7 +114,7 @@ tz_truncate(tz, time, unit)
             time = mktime(&tm);
         RESTORE_TZ();
 
-        ST(0) = sv_2mortal(newSViv((int)time));
+        ST(0) = sv_2mortal(newSViv((IV)time));
         XSRETURN(1);
 
 
@@ -137,4 +135,3 @@ tz_offset(tz, time)
 
         ST(0) = sv_2mortal(newSViv((int)(time-time_utc)));
         XSRETURN(1);
-
