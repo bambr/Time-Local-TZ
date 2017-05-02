@@ -7,6 +7,7 @@ WriteMakefile(
     PREREQ_PM         => {},
     ABSTRACT_FROM     => 'lib/Time/Local/TZ.pm',
     AUTHOR            => 'Sergey Panteleev <bambr@cpan.org>',
+    LICENSE           => 'perl_5',
     CCFLAGS           => '-std=gnu99',
     dist              => {
        PREOP          => 'pod2text lib/Time/Local/TZ.pm | tee README >$(DISTVNAME)/README; chmod -R u=rwX,go=rX . ;',
