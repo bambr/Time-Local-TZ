@@ -1,6 +1,8 @@
 use 5.008;
 use ExtUtils::MakeMaker;
 
+use Config;
+
 WriteMakefile(
     NAME              => 'Time::Local::TZ',
     VERSION_FROM      => 'lib/Time/Local/TZ.pm',
@@ -8,7 +10,7 @@ WriteMakefile(
     ABSTRACT_FROM     => 'lib/Time/Local/TZ.pm',
     AUTHOR            => 'Sergey Panteleev <bambr@cpan.org>',
     LICENSE           => 'perl_5',
-    CCFLAGS           => '-std=gnu99',
+    CCFLAGS           => "$Config{ccflags} -std=gnu99",
     dist              => {
        PREOP          => 'pod2text lib/Time/Local/TZ.pm | tee README >$(DISTVNAME)/README; chmod -R u=rwX,go=rX . ;',
        COMPRESS       => 'gzip -9v',

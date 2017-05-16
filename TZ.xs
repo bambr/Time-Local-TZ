@@ -8,6 +8,32 @@
 #include <string.h>
 
 
+#define TIME_STRING_SIZE 26
+
+
+#if defined(WIN32)
+void inline setenv(const char *name, const char *value, const int flag) {
+    _putenv_s(name, value);
+}
+
+void inline unsetenv(const char *name) {
+    _putenv_s(name, "");
+}
+
+void inline localtime_r(const time_t *time, struct tm *tm) {
+    localtime_s(tm, time);
+}
+
+void inline asctime_r(const struct tm *tm, char* time_string) {
+    asctime_s(time_string, TIME_STRING_SIZE, tm);
+}
+
+void inline gmtime_r(const time_t *time, struct tm *tm) {
+    gmtime_s(tm, time);
+}
+
+#endif
+
 #define BACKUP_TZ()                                           \
     char* old_tz_p = getenv("TZ");                            \
     int envsize = old_tz_p == NULL ? 1 : strlen(old_tz_p)+1;  \
@@ -32,7 +58,7 @@ tz_localtime(tz, time)
     char* tz
     time_t time
     PREINIT:
-        char time_string[26];
+        char time_string[TIME_STRING_SIZE];
         struct tm tm;
     PPCODE:
         BACKUP_TZ();
