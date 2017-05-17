@@ -11,6 +11,31 @@
 #define TIME_STRING_SIZE 26
 
 
+/* thanks to Michael Schout's Env::C module, this solves problem with FreeBSD */
+
+/* in order to work around system and perl implementation bugs/leaks, we need
+ * to sometimes force PERL_USE_SAFE_PUTENV mode.
+ */
+#ifndef PERL_USE_SAFE_PUTENV
+   /* Threaded perl with PERL_TRACK_MEMPOOL enabled causes
+    * "panic: free from wrong pool at exit"
+    * starting at 5.9.4 (confirmed through 5.20.1)
+    * see: https://rt.cpan.org/Ticket/Display.html?id=99962
+    */
+# if PERL_BCDVERSION >= 0x5009004 && defined(USE_ITHREADS) && defined(PERL_TRACK_MEMPOOL)
+#  define USE_SAFE_PUTENV 1
+# elif PERL_BCDVERSION >= 0x5008000 && PERL_BCDVERSION < 0x5019006
+   /* FreeBSD: SIGV at exit on perls prior to 5.19.6
+    * see: https://rt.cpan.org/Ticket/Display.html?id=49872
+    */
+#  if defined(__FreeBSD__)
+#   define USE_SAFE_PUTENV 1
+#  endif
+# endif
+#endif
+
+
+
 #if defined(WIN32)
 void inline setenv(const char *name, const char *value, const int flag) {
     _putenv_s(name, value);
@@ -52,6 +77,11 @@ void inline gmtime_r(const time_t *time, struct tm *tm) {
 MODULE = Time::Local::TZ		PACKAGE = Time::Local::TZ
 PROTOTYPES: DISABLE
 
+BOOT:
+# ifdef USE_SAFE_PUTENV
+PL_use_safe_putenv = 1;
+# endif
+
 
 void
 tz_localtime(tz, time)
@@ -80,7 +110,11 @@ tz_localtime(tz, time)
             ST(8) = sv_2mortal(newSViv(tm.tm_isdst));
             XSRETURN(9); 
         } else {
+#ifdef sun
+            asctime_r(&tm, time_string, TIME_STRING_SIZE);
+#else
             asctime_r(&tm, time_string);
+#endif
             ST(0) = sv_2mortal(newSVpv(time_string, 24));
             XSRETURN(1);
         }
