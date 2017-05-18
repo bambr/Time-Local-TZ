@@ -17,49 +17,33 @@
  * to sometimes force PERL_USE_SAFE_PUTENV mode.
  */
 #ifndef PERL_USE_SAFE_PUTENV
-   /* Threaded perl with PERL_TRACK_MEMPOOL enabled causes
-    * "panic: free from wrong pool at exit"
-    * starting at 5.9.4 (confirmed through 5.20.1)
-    * see: https://rt.cpan.org/Ticket/Display.html?id=99962
-    */
 # if PERL_BCDVERSION >= 0x5009004 && defined(USE_ITHREADS) && defined(PERL_TRACK_MEMPOOL)
 #  define USE_SAFE_PUTENV 1
-# elif PERL_BCDVERSION >= 0x5008000 && PERL_BCDVERSION < 0x5019006
-   /* FreeBSD: SIGV at exit on perls prior to 5.19.6
-    * see: https://rt.cpan.org/Ticket/Display.html?id=49872
-    */
-#  if defined(__FreeBSD__)
-#   define USE_SAFE_PUTENV 1
-#  endif
+# elif defined(__FreeBSD__)
+#  define USE_SAFE_PUTENV 1
 # endif
 #endif
 
+#ifdef USE_SAFE_PUTENV
+# define SAFE_PUTENV_ON()            PL_use_safe_putenv = 1;
+#else
+# define SAFE_PUTENV_ON()
+#endif
 
+#ifdef sun
+#define asctime_r(a, b)              asctime_r(a, b, TIME_STRING_SIZE)
+#endif
 
-#if defined(WIN32)
-void inline setenv(const char *name, const char *value, const int flag) {
-    _putenv_s(name, value);
-}
-
-void inline unsetenv(const char *name) {
-    _putenv_s(name, "");
-}
-
-void inline localtime_r(const time_t *time, struct tm *tm) {
-    localtime_s(tm, time);
-}
-
-void inline asctime_r(const struct tm *tm, char* time_string) {
-    asctime_s(time_string, TIME_STRING_SIZE, tm);
-}
-
-void inline gmtime_r(const time_t *time, struct tm *tm) {
-    gmtime_s(tm, time);
-}
-
+#ifdef WIN32
+#define setenv(name, value, flag)    _putenv_s(name, value)
+#define unsetenv(name)               _putenv_s(name, "")
+#define localtime_r(time, tm)        localtime_s(tm, time)
+#define asctime_r(tm, time_string)   asctime_s(time_string, TIME_STRING_SIZE, tm)
+#define gmtime_r(time, tm)           gmtime_s(tm, time)
 #endif
 
 #define BACKUP_TZ()                                           \
+    SAFE_PUTENV_ON();                                         \
     char* old_tz_p = getenv("TZ");                            \
     int envsize = old_tz_p == NULL ? 1 : strlen(old_tz_p)+1;  \
     char old_tz[envsize];                                     \
@@ -74,14 +58,8 @@ void inline gmtime_r(const time_t *time, struct tm *tm) {
     }                                                         \
 
 
-MODULE = Time::Local::TZ		PACKAGE = Time::Local::TZ
+MODULE = Time::Local::TZ               PACKAGE = Time::Local::TZ
 PROTOTYPES: DISABLE
-
-BOOT:
-# ifdef USE_SAFE_PUTENV
-PL_use_safe_putenv = 1;
-# endif
-
 
 void
 tz_localtime(tz, time)
@@ -108,13 +86,9 @@ tz_localtime(tz, time)
             ST(6) = sv_2mortal(newSViv(tm.tm_wday));
             ST(7) = sv_2mortal(newSViv(tm.tm_yday));
             ST(8) = sv_2mortal(newSViv(tm.tm_isdst));
-            XSRETURN(9); 
+            XSRETURN(9);
         } else {
-#ifdef sun
-            asctime_r(&tm, time_string, TIME_STRING_SIZE);
-#else
             asctime_r(&tm, time_string);
-#endif
             ST(0) = sv_2mortal(newSVpv(time_string, 24));
             XSRETURN(1);
         }
